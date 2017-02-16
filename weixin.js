@@ -90,6 +90,113 @@ exports.reply = function* (next){
 			}
 
 			console.log(reply);
+		}else if(content === '8'){
+			var data = yield wechatApi.uploadMaterial('image', __dirname + '/2.jpg', {type:'image'})
+
+			reply = {
+				type:'image',
+				mediaId:data.media_id
+			}
+			console.log(reply);
+		}else if(content === '9'){
+			var data = yield wechatApi.uploadMaterial('video', __dirname + '/6.mp4', {type:'video',description:'{"title":"Really a nice place", "introduction":"Never think is so easy! "}'})
+			console.log(data);
+			reply = {
+				type:'video',
+				title:'回复视频内容',
+				description:'打个篮球玩玩',
+				mediaId:data.media_id
+			}
+			console.log(reply);
+		}else if(content === '10'){
+			//上传素材， 这个方法支持上传临时和永久二种， 区别就在第三个参数， 有表示永久 没有则是临时
+			var picData = yield wechatApi.uploadMaterial('image', __dirname + '/2.jpg', {})
+
+			var media = {
+				articles:[{
+					title:'图片素材1',
+					thumb_media_id: picData.media_id,
+					author:'Brenda',
+					digest:'摘要内容',
+					show_cover_pic:1,
+					content:'没有什么内容',
+					content_source_url:'https://github.com'
+				}]
+			}
+			//好来上传一个图文
+			data = yield wechatApi.uploadMaterial('news', media, {})
+
+			data = yield wechatApi.fetchMaterial(data.media_id, 'news' , {})
+
+			console.log(data);
+
+			//获取到图文后， 马上就可以回复
+
+			var items  = data.news_item
+
+			var news = []
+
+			items.forEach(function(item){
+				news.push({
+					title:item.title,
+					decription:item.digest,
+					picUrl:picData.url,
+					url: item.url
+				})
+			})
+
+			reply = news
+		}else if(content === '11'){
+			var counts = yield wechatApi.countMaterial()
+
+			console.log(JSON.stringify(counts));
+
+			// var list_image = yield wechatApi.batchGetMaterial({
+			// 	type:'image',
+			// 	offset:0,
+			// 	count:10
+			// })
+
+			// var list_video = yield wechatApi.batchGetMaterial({
+			// 	type:'video',
+			// 	offset:0,
+			// 	count:10
+			// })
+
+			// var list_voice = yield wechatApi.batchGetMaterial({
+			// 	type:'voice',
+			// 	offset:0,
+			// 	count:10
+			// })
+
+			// var list_news = yield wechatApi.batchGetMaterial({
+			// 	type:'news',
+			// 	offset:0,
+			// 	count:10
+			// })
+			//上面注释掉的写法，可以合并成下面的并发的写法
+			var result = yield [
+				wechatApi.batchGetMaterial({
+					type:'image',
+					offset:0,
+					count:10
+				},{
+					type:'voice',
+					offset:0,
+					count:10
+				},{
+					type:'video',
+					offset:0,
+					count:10
+				},{
+					type:'news',
+					offset:0,
+					count:10
+				})
+			]
+			console.log(result );
+
+			reply = result 
 		}
 		this.body = reply
 	}else{
