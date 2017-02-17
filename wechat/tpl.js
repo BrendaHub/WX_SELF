@@ -9,7 +9,7 @@ var tpl = heredoc(function(){/*
 	<xml> 
 	<ToUserName><![CDATA[<%= toUserName %>]]></ToUserName> 
 	<FromUserName><![CDATA[<%= fromUserName %>]]></FromUserName> 
-	<CreateTime><% createTime %></CreateTime> 
+	<CreateTime><%= createTime %></CreateTime> 
 	<MsgType><![CDATA[<%= msgType %>]]></MsgType> 
 	<% if(msgType === 'text') {%>
 		<Content><![CDATA[<%= content %>]]></Content> 
@@ -33,16 +33,16 @@ var tpl = heredoc(function(){/*
 		<Description><![CDATA[<%= content.description %>]]></Description>
 		<MusicUrl><![CDATA[<%= content.musicUrl %>]]></MusicUrl>
 		<HQMusicUrl><![CDATA[<%= content.hqMusicUrl %>]]></HQMusicUrl>
-		<ThumbMediaId><![CDATA[<%= content.mediaId %>]]></ThumbMediaId>
+		<ThumbMediaId><![CDATA[<%= content.thumbMediaId %>]]></ThumbMediaId>
 		</Music>
 	<%} else if(msgType === 'news'){%>
-		<ArticleCount><% content.length %></ArticleCount>
+		<ArticleCount><%= content.length %></ArticleCount>
 		<Articles>
 		<% content.forEach(function(item){%>
 		<item>
 		<Title><![CDATA[<%= item.title %>]]></Title> 
 		<Description><![CDATA[<%= item.description %>]]></Description>
-		<PicUrl><![CDATA[<%= item.picurl %>]]></PicUrl>
+		<PicUrl><![CDATA[<%= item.picUrl %>]]></PicUrl>
 		<Url><![CDATA[<%= item.url %>]]></Url>
 		</item>
 		<%})%>

@@ -17,11 +17,20 @@ var api = {
 		upload:prefix + 'material/add_material',
 		fetch:prefix + 'material/get_material',
 		uploadNews: prefix + 'material/add_news',
-		uploadNewPic:prefix + 'media/uploadimg',
+		uploadNewsPic: prefix + 'media/uploadimg',
 		del:prefix + 'material/del_material',
 		update: prefix + 'material/update_news',
 		count: prefix + 'material/get_materialcount',
 		batch: prefix + 'material/batchget_material'
+	},
+	group:{
+		create: prefix + 'groups/create',
+		fetch:prefix + 'groups/get',
+		check: prefix + 'groups/getid',
+		update: prefix + 'groups/update',
+		move: prefix + 'groups/members/update',
+		batchupdate: prefix + 'groups/members/batchupdate',
+		del:prefix + 'groups/delete',
 	}
 }
 
@@ -62,7 +71,6 @@ Wechat.prototype.updateAccessToken = function(){
 			// var data = response[1]
 			var data = response.body
 			var now = (new Date().getTime())
-			console.log('asdfasdfasdf = ' + JSON.stringify(response.body));
 			var expires_in = now + (data.expires_in - 20) * 1000 
 
 			data.expires_in = expires_in 
@@ -128,7 +136,7 @@ Wechat.prototype.uploadMaterial = function(type, material, permanent){
 
 		form = material 
 	}else{
-		form.media = fs.createReadStream(filepath)
+		form.media = fs.createReadStream(material)
 	}
 	
 	return new Promise(function(resolve, reject){
@@ -155,11 +163,13 @@ Wechat.prototype.uploadMaterial = function(type, material, permanent){
 				}
 
 				//再通过request进行发送请求
+				console.log('<<>>>> ' + JSON.stringify(options));
 				request(options)
 					.then(function(response){
-						var _data = response[1]
+						// var _data = response[1]
+						var _data = response.body
 						if(_data){
-							resolve(_date)
+							resolve(_data)
 						}else{
 							throw new Error('Upload metairal fails!')
 						}
@@ -187,8 +197,8 @@ Wechat.prototype.fetchMaterial = function(mediaId, type, permanent){
 			var form = {}
 			var options = {method:'POST',url:url, json:true}
 			if(permanent){//如果是永久的
-				media_id : mediaId,
-				access_token : data.access_token
+				options.media_id = mediaId
+				options.access_token = data.access_token
 				options.body = form 
 			}else{
 				if(type === 'video'){
@@ -197,10 +207,12 @@ Wechat.prototype.fetchMaterial = function(mediaId, type, permanent){
 				url += '&media_id=' + mediaId 
 			}
 
+					console.log('...options.>>>' + JSON.stringify(options));
 			if(type === 'news' || type === 'video'){
 				request(options)
 				.then(function(response){
-					var _data = response[1]
+					console.log('....>>>' + JSON.stringify(response));
+					var _data = response.body
 
 					if(_data){
 						resolve(_data)
@@ -211,10 +223,7 @@ Wechat.prototype.fetchMaterial = function(mediaId, type, permanent){
 			}else{
 				resolve(url)
 			}
-
-
-
-			resolve(url)
+			// resolve(url)
 		})
 	})
 }
@@ -329,7 +338,149 @@ Wechat.prototype.batchGetMaterial = function(options){
 	})
 }
 
+//创建分组
+Wechat.prototype.createGroup = function(name){
+	var that = this 
 
+	return new Promise(function(resolve, reject){
+		that.fetchAccessToken()
+		.then(function(data){
+			var url = api.group.create + '?access_token=' + data.access_token 
+
+			var options = {
+				group:{
+					name:name
+				}
+			}
+
+			request({method:'POST',url:url,json:true,body:options})
+			.then(function(response){
+				var _data = response.body
+				if(_data){
+					resolve(_data)
+				}else{
+					throw new Error('create group mateial fails')
+				}
+			}).catch(function(err){
+				reject(err)
+			})
+		})
+	})
+}
+
+//获取所有分组信息
+Wechat.prototype.fetchGroup = function(){
+	var that = this 
+
+	return new Promise(function(resolve, reject){
+		that.fetchAccessToken()
+		.then(function(data){
+			var url = api.group.fetch + '?access_token=' + data.access_token 
+
+			request({method:'GET',url:url,json:true})
+			.then(function(response){
+				var _data = response.body
+				if(_data){
+					resolve(_data)
+				}else{
+					throw new Error('get all group mateial fails')
+				}
+			}).catch(function(err){
+				reject(err)
+			})
+		})
+	})
+}
+
+//查询用户是否在指定的分组
+Wechat.prototype.checkGroup = function(openId){
+	var that = this 
+
+	return new Promise(function(resolve, reject){
+		that.fetchAccessToken()
+		.then(function(data){
+			var url = api.group.check + '?access_token=' + data.access_token 
+			var options = {
+				openid:openId
+			}
+			request({method:'POST',body:options, url:url,json:true})
+			.then(function(response){
+				var _data = response.body
+				if(_data){
+					resolve(_data)
+				}else{
+					throw new Error('checkGroup  mateial fails')
+				}
+			}).catch(function(err){
+				reject(err)
+			})
+		})
+	})
+}
+
+//修改分组名称
+Wechat.prototype.updateGroup = function(groupId, newName){
+	var that = this 
+
+	return new Promise(function(resolve, reject){
+		that.fetchAccessToken()
+		.then(function(data){
+			var url = api.group.update + '?access_token=' + data.access_token 
+			var options = {
+				group:{
+					id:groupId,
+					name:newName
+				}
+			}
+			request({method:'POST',body:options, url:url,json:true})
+			.then(function(response){
+				var _data = response.body
+				if(_data){
+					resolve(_data)
+				}else{
+					throw new Error('updateGroup  mateial fails')
+				}
+			}).catch(function(err){
+				reject(err)
+			})
+		})
+	})
+}
+
+//移动分组 and 批量移动分组
+Wechat.prototype.moveGroup = function(openId, targetGroupId){
+	var that = this 
+
+	return new Promise(function(resolve, reject){
+		that.fetchAccessToken()
+		.then(function(data){
+			var url = ''
+			var options = {
+				to_groupid:targetGroupId
+			}
+			if(_.isArray(openId)){//如果是个数组
+				url = api.group.batchupdate + '?access_token=' + data.access_token
+				options.openid_list = openId
+			}else{
+				url = api.group.move + '?access_token=' + data.access_token
+				options.openid = openId
+			}
+			request({method:'POST',body:options, url:url,json:true})
+			.then(function(response){
+				var _data = response.body
+				if(_data){
+					resolve(_data)
+				}else{
+					throw new Error('moveGroup  mateial fails')
+				}
+			}).catch(function(err){
+				reject(err)
+			})
+		})
+	})
+}
+
+// ========================
 
 
 
@@ -337,9 +488,12 @@ Wechat.prototype.batchGetMaterial = function(options){
 Wechat.prototype.reply = function(){
 	var content = this.body
 	var message = this.weixin 
+	console.log('content ===== '+ JSON.stringify(content));
 
+	console.log('message ===== '+ JSON.stringify(message));
 	var xml = util.tpl(content, message)
 
+	console.log('>>>>xml > ' + xml)
 	this.status = 200
 	this.type = 'application/xml'
 	this.body = xml

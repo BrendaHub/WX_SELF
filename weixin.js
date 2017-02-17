@@ -7,7 +7,6 @@ var wechatApi = new Wechat(config.wechat)
 
 exports.reply = function* (next){
 	var message = this.weixin
-	console.log(message);
 
 	//微信事件操作
 	if(message.MsgType === 'event'){
@@ -60,26 +59,27 @@ exports.reply = function* (next){
 				url:'https://nodejs.org'
 			}]
 		}else if(content === '5'){
-			var data = yield wechatApi.uploadMaterial('image', __dirname + '/2.jpg')
+			var data = yield wechatApi.uploadMaterial('image', __dirname + '/2.png')
 
+			console.log('>>>>>> = ' + JSON.stringify(data));
 			reply = {
 				type:'image',
 				mediaId:data.media_id
 			}
-			console.log(reply);
+			console.log(reply)
 		}else if(content === '6'){
 			var data = yield wechatApi.uploadMaterial('video', __dirname + '/6.mp4')
 
 			reply = {
 				type:'video',
-				title:'回复视频内容',
+				title:'回复视频内容99999',
 				description:'打个篮球玩玩',
 				mediaId:data.media_id
 			}
 			console.log(reply);
 		}else if(content === '7'){
 			//先上传一个素材，图片
-			var data = yield wechatApi.uploadMaterial('image', __dirname + '/2.jpg')
+			var data = yield wechatApi.uploadMaterial('image', __dirname + '/2.png')
 
 			reply ={
 				type:'music',
@@ -91,7 +91,7 @@ exports.reply = function* (next){
 
 			console.log(reply);
 		}else if(content === '8'){
-			var data = yield wechatApi.uploadMaterial('image', __dirname + '/2.jpg', {type:'image'})
+			var data = yield wechatApi.uploadMaterial('image', __dirname + '/2.png', {type:'image'})
 
 			reply = {
 				type:'image',
@@ -103,15 +103,15 @@ exports.reply = function* (next){
 			console.log(data);
 			reply = {
 				type:'video',
-				title:'回复视频内容',
+				title:'回复视频内容232',
 				description:'打个篮球玩玩',
 				mediaId:data.media_id
 			}
 			console.log(reply);
 		}else if(content === '10'){
 			//上传素材， 这个方法支持上传临时和永久二种， 区别就在第三个参数， 有表示永久 没有则是临时
-			var picData = yield wechatApi.uploadMaterial('image', __dirname + '/2.jpg', {})
-
+			var picData = yield wechatApi.uploadMaterial('image', __dirname + '/2.png', {type:'image'})
+			console.log('上传图文素材后的media_id  为= ' + JSON.stringify(picData));
 			var media = {
 				articles:[{
 					title:'图片素材1',
@@ -125,14 +125,16 @@ exports.reply = function* (next){
 			}
 			//好来上传一个图文
 			data = yield wechatApi.uploadMaterial('news', media, {})
-
+			console.log('上传图文的media_id  为= ' + JSON.stringify(data));
+			//把上传后的图片获取回来
 			data = yield wechatApi.fetchMaterial(data.media_id, 'news' , {})
+			console.log('获取上传后的图文信息  为= ' + JSON.stringify(data));
 
-			console.log(data);
 
 			//获取到图文后， 马上就可以回复
 
 			var items  = data.news_item
+			// console.log('>>items>> ' + items);
 
 			var news = []
 
@@ -180,15 +182,15 @@ exports.reply = function* (next){
 					type:'image',
 					offset:0,
 					count:10
-				},{
+				}),wechatApi.batchGetMaterial({
 					type:'voice',
 					offset:0,
 					count:10
-				},{
+				}),wechatApi.batchGetMaterial({
 					type:'video',
 					offset:0,
 					count:10
-				},{
+				}),wechatApi.batchGetMaterial({
 					type:'news',
 					offset:0,
 					count:10
