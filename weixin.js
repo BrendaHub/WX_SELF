@@ -199,7 +199,41 @@ exports.reply = function* (next){
 			console.log(result );
 
 			reply = result 
+		}else if(content === '12'){
+			var group = yield wechatApi.createGroup('wechat')
+
+			console.log('分组名： ' + group);
+
+			var groups = yield wechatApi.fetchGroups()
+
+			console.log('分组列表：' + JSON.stringify(groups));
+
+			var group_self = yield wechatApi.checkGroup(message.FromUserName) 
+
+			console.log('查询我在的分组， ' + JSON.stringify(group_self));
+		}else if(content === '13'){//获取用户接口测试
+			//单个获取
+			var user = yield wechatApi.fetchUsers(message.FromUserName,'en')
+			//批量获取
+			var openIds = [
+				//国家地区语言版本，zh_CN 简体，zh_TW 繁体，en 英语，默认为zh-CN
+				{openid: message.FromUserName,lang:'en'}
+			]
+			var userlist = yield wechatApi.fetchUsers(openIds)
+
+			reply = JSON.stringify(userlist)
+		}else if(content === '14'){
+			var listUser = yield wechatApi.listUsers()
+
+			if(listUser){
+				reply = listUser.total
+			}
+			else{
+				reply = '没有关注用户'
+			}
 		}
+
+	
 		this.body = reply
 	}else{
 
