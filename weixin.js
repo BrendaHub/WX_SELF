@@ -231,6 +231,19 @@ exports.reply = function* (next){
 			else{
 				reply = '没有关注用户'
 			}
+		}else if(content === '15'){
+			var npmews = {
+				media_id : 'xxxx'
+			}
+			var text = {
+				'content':'针对关注用户的文本回复'
+			}
+
+			var msgData = yield wechatApi.sendByGroup('mpnews', mpnews, 100)
+
+			console.log(msgData);
+
+			reply = '回复成功了吗'
 		}
 
 	

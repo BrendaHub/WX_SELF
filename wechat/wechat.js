@@ -37,6 +37,10 @@ var api = {
 		fetch: prefix + 'user/info',
 		batchFetch: prefix + 'user/info/batchget',
 		list: prefix + 'user/get'
+	},
+	mass:{
+		sendByGroup: prefix + 'message/mass/sendall',
+		openId: prefix + 'message/mass/send'
 	}
 }
 
@@ -66,6 +70,7 @@ Wechat.prototype.isValidAccessToken = function(data){
 		return false
 	}
 }
+
 //Wechat对象的原型链上添加一个更新access_token的方法
 Wechat.prototype.updateAccessToken = function(){
 	var appID = this.appID
@@ -613,6 +618,79 @@ Wechat.prototype.listUsers = function(openId){
 					resolve(_data)
 				}else{
 					throw new Error('listUsers info  fails')
+				}
+			}).catch(function(err){
+				reject(err)
+			})
+		})
+	})
+}
+
+//高级群发接口, 说明：
+// type ,表示要群发的消息类型
+// message ，表示群发的消息内容
+// groupid，表示群发的目录群组
+Wechat.prototype.sendByGroup = function(type, messge, groupid){
+	var that = this 
+
+	//定义一个消息字面对象
+	var msg = {
+		filter:{},
+		msgType: type
+	}
+	msg[type] = message
+	// msg.type = message
+	//如果分组信息为空，表示给所有的群发送消息
+	if(!groupid){
+		msg.filter.is_to_all = true
+	}else{
+		msg.filter = {
+			is_to_all:false,
+			group_id: groupid
+		}
+	}
+
+	return new Promise(function(resolve, reject){
+		that.fetchAccessToken().then(function(data){
+			var url = api.mass.sendByGroup + '?access_token=' + data.access_token 
+
+			requedt({method:'POST',url:url, json:true, body: msg}).then(function(response){
+				var _data = response.body
+				if(_data){
+					resolve(_data)
+				}else{
+					throw new Error('send all group info fail')
+				}
+			}).catch(function(err){
+				reject(err)
+			})
+		})
+	})
+}
+
+//针对某个单独的openId 调用群发接口，这个方法只能是认证后的服务号可以调用
+Wechat.prototype.sendByOpenId = function(type, message, openIds){
+	var that = this 
+
+	//定义一个消息字面对象
+	var msg = {
+		msgType: type,
+		touser:openIds
+	}
+	msg[type] = message
+	// msg.type = message
+	//如果分组信息为空，表示给所有的群发送消息
+
+	return new Promise(function(resolve, reject){
+		that.fetchAccessToken().then(function(data){
+			var url = api.mass.openId + '?access_token=' + data.access_token 
+
+			requedt({method:'POST',url:url, json:true, body: msg}).then(function(response){
+				var _data = response.body
+				if(_data){
+					resolve(_data)
+				}else{
+					throw new Error('send by OpenId  info fail')
 				}
 			}).catch(function(err){
 				reject(err)
