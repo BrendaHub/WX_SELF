@@ -231,7 +231,7 @@ exports.reply = function* (next){
 			else{
 				reply = '没有关注用户'
 			}
-		}else if(content === '15'){
+		}else if(content === '15'){//测试群发接口
 			var npmews = {
 				media_id : 'xxxx'
 			}
@@ -244,6 +244,27 @@ exports.reply = function* (next){
 			console.log(msgData);
 
 			reply = '回复成功了吗'
+		}else if(content === '16'){//测试群发消息的预览接口
+
+			var mpnews = {
+				media_id:'adfasdfasdfadf'
+			}
+
+			// var text = {
+			// 	'content':'预览文本效果'
+			// }
+
+			var msgData = yield wechatApi.previewMass('mpnews', mpnews, 'openid乡村基f')
+
+			console.log(msgData);
+
+			reply = '测试预览完成，是否成功了 。 '
+		}else if(content === '17'){//测试，群发消息是否成功的查检接口
+			var checkResult = yield wechatApi.checkMass('msgid')
+
+			console.log(checkResult);
+
+			reply = JSON.stringify(checkResult)
 		}
 
 	

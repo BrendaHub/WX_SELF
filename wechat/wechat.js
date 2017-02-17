@@ -40,7 +40,16 @@ var api = {
 	},
 	mass:{
 		sendByGroup: prefix + 'message/mass/sendall',
-		openId: prefix + 'message/mass/send'
+		openId: prefix + 'message/mass/send',
+		del: prefix + 'message/mass/delete',
+		preview: prefix + 'message/mass/preview',
+		check: prefix + 'message/mass/get'
+	},
+	menu:{
+		create: prefix + 'menu/create',
+		get: prefix +'menu/get',
+		del: prefix + 'menu/delete',
+		current: prefix + 'get_current_selfmenu_info'
 	}
 }
 
@@ -698,6 +707,185 @@ Wechat.prototype.sendByOpenId = function(type, message, openIds){
 		})
 	})
 }
+
+//删除群发
+/*
+	1、只有已经发送成功的消息才能删除
+    2、删除消息是将消息的图文详情页失效，已经收到的用户，还是能在其本地看到消息卡片。
+	3、删除群发消息只能删除图文消息和视频消息，其他类型的消息一经发送，无法删除。
+	4、如果多次群发发送的是一个图文消息，那么删除其中一次群发，就会删除掉这个图文消息也，导致所有群发都失效
+*/
+Wechat.prototype.deleteMass = function(msgId){
+	//将当前上下文对象 引用到一个局部变量，方便操作
+	var that = this 
+
+	return new Promise(function(resolve, reject){
+		that.fetchAccessToken().then(function(data){
+			var url = api.mass.del + '?access_token=' + data.access_token
+
+			var form = {
+				msg_id : msgId
+			}
+
+			request({method:'POST',url:url, json:true, body:form }).then(function(response){
+				var _data = response.body
+				if(_data){
+					resolve(_data)
+				}else{
+					throw new Error('delete Mass npmnews fails ')
+				}
+			}).catch(function(err){
+				reject(err)
+			})
+		})
+	})
+}
+
+//群发消息预览接口实现
+Wechat.prototype.previewMass = function(type, message, toUserOpenId){
+	var that = this 
+	var msg = {
+		msgtype: type,
+		touser: toUserOpenId
+	}
+
+	msg[type] = message
+
+	return new Promise(function(resolve, reject){
+		that.fetchAccessToken().then(function(data){
+
+			var url = api.mass.preview + '?access_token=' + data.access_token
+
+			request({method:'POST',url:url, json:true,body:msg}).then(function(response){
+				var _data = response.body
+				if(_data)
+				{
+					resolve(_data)
+				}else{
+					throw new Error('preview mass message fails ')
+				}
+			}).catch(function(err){
+				reject(err)
+			})
+		})
+	})
+}
+
+//检查群发消息的是否发送成功
+Wechat.prototype.checkMass = function(msgId){
+	var that = this 
+	
+
+	return new Promise(function(resolve, reject){
+		that.fetchAccessToken().then(function(data){
+
+			var url = api.mass.check + '?access_token=' + data.access_token
+			var form = {
+				msg_id : msgId
+			}
+			request({method:'POST',url:url, json:true,body:form}).then(function(response){
+				var _data = response.body
+				if(_data)
+				{
+					resolve(_data)
+				}else{
+					throw new Error('check  mass message fails ')
+				}
+			}).catch(function(err){
+				reject(err)
+			})
+		})
+	})
+}
+
+//实现微信公众号创建菜单的功能
+Wechat.prototype.createMenu = function(menuJson){
+	var that = this 
+	
+
+	return new Promise(function(resolve, reject){
+		that.fetchAccessToken().then(function(data){
+
+			var url = api.menu.create + '?access_token=' + data.access_token
+			
+			request({method:'POST',url:url, json:true,body:menu}).then(function(response){
+				var _data = response.body
+				if(_data)
+				{
+					resolve(_data)
+				}else{
+					throw new Error('create menu  message fails ')
+				}
+			}).catch(function(err){
+				reject(err)
+			})
+		})
+	})
+}
+
+//通过接口创建的菜单是否要获取到菜单的结构数据
+Wechat.prototype.getMenu = function(){
+	var that  = this 
+	return new Promise(function(resolve, reject){
+		that.fetchAccessToken().then(function(data){
+			var url = api.menu.get + '?access_token=' + data.access_token
+
+			request({url:url,json:true}).then(function(response){
+				var _data = response.body 
+			   if(_data){
+			   	     resolve(_data)
+			   }else{
+			   	throw new Error(" get Menu fails ")
+			   }
+			}).catch(function(err){
+				reject(err)
+			})
+		})
+	})
+}
+
+//删除创建的菜单信息
+Wechat.prototype.deleteMenu = function(){
+	var that  = this 
+	return new Promise(function(resolve, reject){
+		that.fetchAccessToken().then(function(data){
+			var url = api.menu.del + '?access_token=' + data.access_token
+
+			request({url:url,json:true}).then(function(response){
+				var _data = response.body 
+			   if(_data){
+			   	     resolve(_data)
+			   }else{
+			   	throw new Error(" delete Menu fails ")
+			   }
+			}).catch(function(err){
+				reject(err)
+			})
+		})
+	})
+}
+//获取自定义菜单配置接口
+Wechat.prototype.getCurrentMenu = function(){
+	var that  = this 
+	return new Promise(function(resolve, reject){
+		that.fetchAccessToken().then(function(data){
+			var url = api.menu.current + '?access_token=' + data.access_token
+
+			request({url:url,json:true}).then(function(response){
+				var _data = response.body 
+			   if(_data){
+			   	     resolve(_data)
+			   }else{
+			   	throw new Error(" get Current  Menu fails ")
+			   }
+			}).catch(function(err){
+				reject(err)
+			})
+		})
+	})
+}
+
+
 // ========================
 
 
