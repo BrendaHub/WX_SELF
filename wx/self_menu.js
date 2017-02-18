@@ -67,15 +67,17 @@ module.exports = {
 				'type':'location_select',
 				'name':'地理位置选择',
 				'key':'location_select'
-			},{
-				'type':'media_id',
-				'name':'下发图片消息',
-				'key':'xxxxx'
-			},{
-				'type':'view_limited',
-				'name':'跳转图文消息的URL',
-				'key':'xxxxx'
-			}]
+			}
+			// },{
+			// 	'type':'media_id',
+			// 	'name':'下发图片消息',
+			// 	'key':'xxxxx'
+			// },{
+			// 	'type':'view_limited',
+			// 	'name':'跳转图文消息的URL',
+			// 	'key':'xxxxx'
+			// }]
+			]
 		}
 	]
 }
