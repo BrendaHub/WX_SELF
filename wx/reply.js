@@ -3,6 +3,7 @@
 var path = require('path')
 var config = require('../config')
 var Wechat = require('../wechat/wechat')
+var menu = require('./self_menu')
 
 var wechatApi = new Wechat(config.wechat)
 
@@ -93,7 +94,7 @@ exports.reply = function* (next){
 				url:'https://nodejs.org'
 			}]
 		}else if(content === '5'){
-			var data = yield wechatApi.uploadMaterial('image', path.join(__dirname + '../2.png'))
+			var data = yield wechatApi.uploadMaterial('image', path.join(__dirname , '../2.png'))
 
 			console.log('>>>>>> = ' + JSON.stringify(data));
 			reply = {
@@ -102,7 +103,7 @@ exports.reply = function* (next){
 			}
 			console.log(reply)
 		}else if(content === '6'){
-			var data = yield wechatApi.uploadMaterial('video', path.join(__dirname + '../6.mp4'))
+			var data = yield wechatApi.uploadMaterial('video', path.join(__dirname , '../6.mp4'))
 
 			reply = {
 				type:'video',
@@ -113,7 +114,7 @@ exports.reply = function* (next){
 			console.log(reply);
 		}else if(content === '7'){
 			//先上传一个素材，图片
-			var data = yield wechatApi.uploadMaterial('image', path.join(__dirname + '../2.png'))
+			var data = yield wechatApi.uploadMaterial('image', path.join(__dirname , '../2.png'))
 
 			reply ={
 				type:'music',
@@ -125,7 +126,7 @@ exports.reply = function* (next){
 
 			console.log(reply);
 		}else if(content === '8'){
-			var data = yield wechatApi.uploadMaterial('image', path.join(__dirname + '../2.png'), {type:'image'})
+			var data = yield wechatApi.uploadMaterial('image', path.join(__dirname , '../2.png'), {type:'image'})
 
 			reply = {
 				type:'image',
@@ -133,7 +134,7 @@ exports.reply = function* (next){
 			}
 			console.log(reply);
 		}else if(content === '9'){
-			var data = yield wechatApi.uploadMaterial('video', path.join(__dirname + '../6.mp4'), {type:'video',description:'{"title":"Really a nice place", "introduction":"Never think is so easy! "}'})
+			var data = yield wechatApi.uploadMaterial('video', path.join(__dirname , '../6.mp4'), {type:'video',description:'{"title":"Really a nice place", "introduction":"Never think is so easy! "}'})
 			console.log(data);
 			reply = {
 				type:'video',
@@ -144,7 +145,7 @@ exports.reply = function* (next){
 			console.log(reply);
 		}else if(content === '10'){
 			//上传素材， 这个方法支持上传临时和永久二种， 区别就在第三个参数， 有表示永久 没有则是临时
-			var picData = yield wechatApi.uploadMaterial('image', path.join(__dirname + '../2.png'), {type:'image'})
+			var picData = yield wechatApi.uploadMaterial('image', path.join(__dirname , '../2.png'), {type:'image'})
 			console.log('上传图文素材后的media_id  为= ' + JSON.stringify(picData));
 			var media = {
 				articles:[{
