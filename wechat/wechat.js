@@ -61,6 +61,9 @@ var api = {
 	},
 	shortUrl:{
 		create: prefix + 'shorturl'
+	},
+	ticket:{//微信jssdk获取票据的接口地址配置
+		get: prefix + 'ticket/getticket'
 	}
 }
 
@@ -71,6 +74,8 @@ function Wechat(opts){
 	this.appSecret = opts.appSecret
 	this.getAccessToken = opts.getAccessToken
 	this.saveAccessToken = opts.saveAccessToken
+	this.getTicket = opts.getTicket 
+	this.saveTicket = opts.saveTicket
 	this.fetchAccessToken()
 }
 
@@ -110,6 +115,8 @@ Wechat.prototype.updateAccessToken = function(){
 		})
 	})
 }
+
+//获取调用接口的access_token 方法,会在文件中缓存
 Wechat.prototype.fetchAccessToken = function(){
 	var that = this 
 	if( this.access_token && this.expires_in ){//判断是否存在相应的属性值
@@ -119,7 +126,7 @@ Wechat.prototype.fetchAccessToken = function(){
 	}
 	//这里采用了Promise的框架，.then() 实现异步的逻辑
 	//即获取到票据后， 需要做什么事情.then（）里面进行扫行
-	this.getAccessToken().then(function(data){
+	return this.getAccessToken().then(function(data){
 		try{
 			//直接使用accessToken
 			data = JSON.parse(data)
@@ -137,14 +144,75 @@ Wechat.prototype.fetchAccessToken = function(){
 			return that.updateAccessToken()
 		}
 	}).then(function(data){
-		that.access_token = data.access_token
-		that.expires_in = data.expires_in
+
+		//不需要存在that 对象上
+		// that.access_token = data.access_token
+		// that.expires_in = data.expires_in
 
 		that.saveAccessToken(data)
 
 		return Promise.resolve(data)
 	})
 }
+
+//获取调用jssdk 接口所需的ticket的方法, 需要根据access_token开获到 
+//jssdk的ticket 也是需要按照access_token一样的处理方法缓存起来， 每资申请到的一个有效的
+//ticket有效期为7200秒 
+Wechat.prototype.fetchTicket = function(access_token){
+	var that = this 
+	return this.getTicket().then(function(data){
+		try{
+			data = JSON.parse(data)
+		}catch(e){
+			return that.updateTicket(access_token)
+		}
+
+		if(that.isValidTicket(data)){
+			return Promise.resolve(data)
+		}else{
+			return that.updateTicket(access_token)
+		}
+	}).then(function(data){
+		that.saveTicket(data)
+		return Promise.resolve(data)
+	})
+}
+//更新ticket 方法
+Wechat.prototype.updateTicket = function(access_token){
+	//access_token=ACCESS_TOKEN&type=jsapi
+	var url = api.ticket.get + '&access_token=' + access_token + '&type=jsapi'
+	console.log('utl = ' + JSON.stringify(url));
+	return new Promise(function(resolve, reject){
+		request({url: url, json:true}).then(function(response){
+			console.log('ticket = ' + JSON.stringify(response));
+			// var data = response[1]
+			var data = response.body
+			var now = (new Date().getTime())
+			var expires_in = now + (data.expires_in - 20) * 1000 
+
+			data.expires_in = expires_in 
+
+			resolve(data)
+		})
+	})
+}
+//判断ticket 是否有效
+Wechat.prototype.isValidTicket = function(data){
+	if( !data || !data.ticket || !data.expires_in){
+		return false;
+	} 
+
+	var ticket = data.ticket
+	var expires_in = data.expires_in
+	var now = (new Date().getTime())
+
+	if(ticket && now < expires_in){
+		return true;
+	}else{
+		return false
+	}
+}
+
 
 //添加一个上传素材的方法
 Wechat.prototype.uploadMaterial = function(type, material, permanent){
