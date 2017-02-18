@@ -85,7 +85,7 @@ Wechat.prototype.updateAccessToken = function(){
 	var appID = this.appID
 	var appSecret = this.appSecret
 	var url = api.accessToken + '&appid=' + appID + '&secret=' + appSecret 
-	console.log('utl = ' + JSON.stringify(url));
+	//console.log('utl = ' + JSON.stringify(url));
 	return new Promise(function(resolve, reject){
 		request({url: url, json:true}).then(function(response){
 			// var data = response[1]
@@ -160,6 +160,7 @@ Wechat.prototype.uploadMaterial = function(type, material, permanent){
 	}
 	
 	return new Promise(function(resolve, reject){
+		console.log('>>' + JSON.stringify(that.fetchAccessToken()));
 		that
 			.fetchAccessToken()
 			.then(function(data){
@@ -183,7 +184,7 @@ Wechat.prototype.uploadMaterial = function(type, material, permanent){
 				}
 
 				//再通过request进行发送请求
-				console.log('<<>>>> ' + JSON.stringify(options));
+				//console.log('<<>>>> ' + JSON.stringify(options));
 				request(options)
 					.then(function(response){
 						// var _data = response[1]
@@ -227,11 +228,11 @@ Wechat.prototype.fetchMaterial = function(mediaId, type, permanent){
 				url += '&media_id=' + mediaId 
 			}
 
-					console.log('...options.>>>' + JSON.stringify(options));
+					//console.log('...options.>>>' + JSON.stringify(options));
 			if(type === 'news' || type === 'video'){
 				request(options)
 				.then(function(response){
-					console.log('....>>>' + JSON.stringify(response));
+					//console.log('....>>>' + JSON.stringify(response));
 					var _data = response.body
 
 					if(_data){
@@ -808,7 +809,7 @@ Wechat.prototype.createMenu = function(menuJson){
 
 			var url = api.menu.create + '?access_token=' + data.access_token
 			
-			request({method:'POST',url:url, json:true,body:menu}).then(function(response){
+			request({method:'POST',url:url, json:true,body:menuJson}).then(function(response){
 				var _data = response.body
 				if(_data)
 				{
@@ -844,26 +845,52 @@ Wechat.prototype.getMenu = function(){
 	})
 }
 
+
 //删除创建的菜单信息
 Wechat.prototype.deleteMenu = function(){
-	var that  = this 
+	var that = this 
+		//console.log('>>>' + JSON.stringify(that))
 	return new Promise(function(resolve, reject){
 		that.fetchAccessToken().then(function(data){
 			var url = api.menu.del + '?access_token=' + data.access_token
-
-			request({url:url,json:true}).then(function(response){
+			request({url:url, json:true}).then(function(response){
 				var _data = response.body 
-			   if(_data){
-			   	     resolve(_data)
-			   }else{
-			   	throw new Error(" delete Menu fails ")
-			   }
+				if(_data){
+					resolve(_data)
+				}else{
+					throw new Error('delete Menu fails ')
+				}
 			}).catch(function(err){
 				reject(err)
 			})
 		})
 	})
 }
+
+//删除创建的菜单信息
+// Wechat.prototype.deleteMenu = function(){
+// 	var that  = this 
+
+
+// 	return new Promise(function(resolve, reject){
+// 		that.fetchAccessToken()
+// 			.then(function(data){
+// 			var url = api.menu.del + '?access_token=' + data.access_token
+
+// 			request({url:url,json:true}).then(function(response){
+// 				var _data = response.body 
+// 			   if(_data){
+// 			   	     resolve(_data)
+// 			   }else{
+// 			   	throw new Error(" delete Menu fails ")
+// 			   }
+// 			}).catch(function(err){
+// 				reject(err)
+// 			})
+// 		})
+// 	})
+// }
+
 //获取自定义菜单配置接口
 Wechat.prototype.getCurrentMenu = function(){
 	var that  = this 
@@ -899,7 +926,7 @@ Wechat.prototype.reply = function(){
 	console.log('message ===== '+ JSON.stringify(message));
 	var xml = util.tpl(content, message)
 
-	console.log('>>>>xml > ' + xml)
+	//console.log('>>>>xml > ' + xml)
 	this.status = 200
 	this.type = 'application/xml'
 	this.body = xml

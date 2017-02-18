@@ -31,7 +31,7 @@
 module.exports = {
 	'button':[
 		{
-			'name':'点击事件',
+			'name':'点击事件Y',
 			'type':'click',
 			'key':'menu_click'
 		},{
@@ -49,7 +49,7 @@ module.exports = {
 				'name':'扫码推送',
 				'key':'qr_scan_wait'
 			},{
-				'type':'pic_sysphote',
+				'type':'pic_sysphoto',
 				'name':'弹出系统拍照',
 				'key':'pic_photo'
 			},{

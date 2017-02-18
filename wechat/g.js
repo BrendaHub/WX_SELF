@@ -46,15 +46,15 @@ module.exports = function(opts, handler){
 				limit:'1mb',
 				encoding:this.charset
 			})
-			console.log(data.toString());
+			console.log('data> ' + data.toString());
 
 			var content = yield util.parseXMLAsync(data)
 
-			console.log(content);
+			console.log('content >' + JSON.stringify(content))
 			//接下来还需要把content进一步格式化
 			var message = util.formatMessage(content.xml)
 
-			console.log(message);
+			console.log('message> ' + JSON.stringify(message))
 
 			//进行微信接口事件的判断
 			//是个event 操作事件

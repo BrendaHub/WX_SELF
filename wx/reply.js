@@ -1,17 +1,17 @@
 'use strict'
 
 var path = require('path')
+// var Promise = require('bluebird')
 var config = require('../config')
 var Wechat = require('../wechat/wechat')
-var menu = require('./self_menu')
+var menu = require('./menu')
 
 var wechatApi = new Wechat(config.wechat)
 
-wechatApi.deleteMenu().then(function(){
-	return wechatApi.createMenu(menu)
-}).then(function(msg){
-	console.log(msg);
-})
+
+
+
+
 
 exports.reply = function* (next){
 	var message = this.weixin
@@ -24,11 +24,13 @@ exports.reply = function* (next){
 			if(message.EventKey){
 				console.info('扫描二维码进来：' + message.EventKey + ' ' + message.ticket);
 			}
-			this.body = '哈哈， 你订阅了这个号\r\n 消息ID: ' + message.MsgId 
+			this.body = '哈哈， 你订阅了这个号\r\n 消息ID: ' + message.EventKey 
 
+			
 
 		}else if(message.Event === 'unsubscribe'){//取消关注
 			console.log('取消关注');
+			this.body = '取消关注'
 		}else if(message.Event === 'LOCATION'){
 			this.body = '您上报的位置是:' + message.Latitude + '/' + message.Longitude + '-' + message.Precision
 
@@ -36,38 +38,39 @@ exports.reply = function* (next){
 			this.body = '您点击了菜单 ' + message.EventKey
 
 		}else if(message.Event === 'SCAN'){//扫描
-			console.log('关注后扫二维码' + message.EventKey + ' ' + message.Ticket) ;
+			//console.log('关注后扫二维码' + message.EventKey + ' ' + message.Ticket) ;
 			this.body = '看到你扫了一下哦'
 
 		}else if(message.Event === 'VIEW'){
 			this.body = '您点击了菜单中的链接： ' + message.EventKey
 
 		}else if(message.Event === 'scancode_push'){
-			console.log(message.ScanCodeInfo.ScanType)
-			console.log(message.ScanCodeInfo.ScanResult);
+			//console.log(message.ScanCodeInfo.ScanType)
+			//console.log(message.ScanCodeInfo.ScanResult);
 			this.body = '您点击了菜单中的： ' + message.EventKey
 		}else if(message.Event === 'scancode_waitmsg'){
-			console.log(message.ScanCodeInfo.ScanCodeInfo)
-			console.log(message.ScanCodeInfo.ScanResult);
+			//console.log(message.ScanCodeInfo.ScanCodeInfo)
+			//console.log(message.ScanCodeInfo.ScanResult);
 			this.body = '您点击了菜单中的： ' + message.EventKey
 		}else if(message.Event === 'pic_sysphoto'){
-			console.log(message.SendPicsInfo.PicList);
-			console.log(message.SendPicsInfo.Count);
+			//console.log(message.SendPicsInfo.PicList);
+			//console.log(message.SendPicsInfo.Count);
 			this.body = '您点击了菜单中的： ' + message.EventKey
 		}else if(message.Event === 'pic_photo_or_album'){
-			console.log(message.SendPicsInfo.PicList);
-			console.log(message.SendPicsInfo.Count);
+			//console.log(message.SendPicsInfo.PicList);
+			//console.log(message.SendPicsInfo.Count);
 			this.body = '您点击了菜单中的： ' + message.EventKey
+
 		}else if(message.Event === 'pic_weixin'){
-			console.log(message.SendPicsInfo.PicList);
-			console.log(message.SendPicsInfo.Count);
+			//console.log(message.SendPicsInfo.PicList);
+			//console.log(message.SendPicsInfo.Count);
 			this.body = '您点击了菜单中的： ' + message.EventKey
 		}else if(message.Event === 'location_select'){
-			console.log(message.SendLocationInfo.Location_X);
-			console.log(message.SendLocationInfo.Location_Y);
-			console.log(message.SendLocationInfo.Scale);
-			console.log(message.SendLocationInfo.Label);
-			console.log(message.SendLocationInfo.Poiname);
+			//console.log(message.SendLocationInfo.Location_X);
+			//console.log(message.SendLocationInfo.Location_Y);
+			//console.log(message.SendLocationInfo.Scale);
+			//console.log(message.SendLocationInfo.Label);
+			//console.log(message.SendLocationInfo.Poiname);
 			this.body = '您点击了菜单中的： ' + message.EventKey
 		}
 		
@@ -75,7 +78,20 @@ exports.reply = function* (next){
 		var content = message.Content 
 		var reply = '额， 你说的 ' + message.Content + ' 太复杂了 '
 		if(content === '1'){
-			reply = '天下第一吃大米'
+			//关注完后， 创建菜单
+			var createResult = ''
+			wechatApi.deleteMenu().then(function(){
+				return wechatApi.createMenu(menu)
+			}).then(function(msg){
+				console.log(msg);
+				createResult = msg
+				
+			})
+			if(createResult && createResult.errcode === 0){
+				reply = '菜单创建成工， 取消关注后重新关注查看，请不要止频繁操作'
+			}else{
+				reply = '菜单创建失败，查询看日志原因'
+			}
 		}else if (content === '2'){
 			reply = '天下第二吃豆腐'
 		}else if (content === '3'){
@@ -96,12 +112,12 @@ exports.reply = function* (next){
 		}else if(content === '5'){
 			var data = yield wechatApi.uploadMaterial('image', path.join(__dirname , '../2.png'))
 
-			console.log('>>>>>> = ' + JSON.stringify(data));
+			//console.log('>>>>>> = ' + JSON.stringify(data));
 			reply = {
 				type:'image',
 				mediaId:data.media_id
 			}
-			console.log(reply)
+			//console.log(reply)
 		}else if(content === '6'){
 			var data = yield wechatApi.uploadMaterial('video', path.join(__dirname , '../6.mp4'))
 
@@ -111,7 +127,7 @@ exports.reply = function* (next){
 				description:'打个篮球玩玩',
 				mediaId:data.media_id
 			}
-			console.log(reply);
+			//console.log(reply);
 		}else if(content === '7'){
 			//先上传一个素材，图片
 			var data = yield wechatApi.uploadMaterial('image', path.join(__dirname , '../2.png'))
@@ -124,7 +140,7 @@ exports.reply = function* (next){
 				thumbMediaId: data.media_id
 			}
 
-			console.log(reply);
+			//console.log(reply);
 		}else if(content === '8'){
 			var data = yield wechatApi.uploadMaterial('image', path.join(__dirname , '../2.png'), {type:'image'})
 
@@ -132,21 +148,21 @@ exports.reply = function* (next){
 				type:'image',
 				mediaId:data.media_id
 			}
-			console.log(reply);
+			//console.log(reply);
 		}else if(content === '9'){
 			var data = yield wechatApi.uploadMaterial('video', path.join(__dirname , '../6.mp4'), {type:'video',description:'{"title":"Really a nice place", "introduction":"Never think is so easy! "}'})
-			console.log(data);
+			//console.log(data);
 			reply = {
 				type:'video',
 				title:'回复视频内容232',
 				description:'打个篮球玩玩',
 				mediaId:data.media_id
 			}
-			console.log(reply);
+			//console.log(reply);
 		}else if(content === '10'){
 			//上传素材， 这个方法支持上传临时和永久二种， 区别就在第三个参数， 有表示永久 没有则是临时
 			var picData = yield wechatApi.uploadMaterial('image', path.join(__dirname , '../2.png'), {type:'image'})
-			console.log('上传图文素材后的media_id  为= ' + JSON.stringify(picData));
+			//console.log('上传图文素材后的media_id  为= ' + JSON.stringify(picData));
 			var media = {
 				articles:[{
 					title:'图片素材1',
@@ -160,16 +176,16 @@ exports.reply = function* (next){
 			}
 			//好来上传一个图文
 			data = yield wechatApi.uploadMaterial('news', media, {})
-			console.log('上传图文的media_id  为= ' + JSON.stringify(data));
+			//console.log('上传图文的media_id  为= ' + JSON.stringify(data));
 			//把上传后的图片获取回来
 			data = yield wechatApi.fetchMaterial(data.media_id, 'news' , {})
-			console.log('获取上传后的图文信息  为= ' + JSON.stringify(data));
+			//console.log('获取上传后的图文信息  为= ' + JSON.stringify(data));
 
 
 			//获取到图文后， 马上就可以回复
 
 			var items  = data.news_item
-			// console.log('>>items>> ' + items);
+			// //console.log('>>items>> ' + items);
 
 			var news = []
 
@@ -186,7 +202,7 @@ exports.reply = function* (next){
 		}else if(content === '11'){
 			var counts = yield wechatApi.countMaterial()
 
-			console.log(JSON.stringify(counts));
+			//console.log(JSON.stringify(counts));
 
 			// var list_image = yield wechatApi.batchGetMaterial({
 			// 	type:'image',
@@ -231,21 +247,21 @@ exports.reply = function* (next){
 					count:10
 				})
 			]
-			console.log(result );
+			//console.log(result );
 
 			reply = result 
 		}else if(content === '12'){
 			var group = yield wechatApi.createGroup('wechat')
 
-			console.log('分组名： ' + group);
+			//console.log('分组名： ' + group);
 
 			var groups = yield wechatApi.fetchGroups()
 
-			console.log('分组列表：' + JSON.stringify(groups));
+			//console.log('分组列表：' + JSON.stringify(groups));
 
 			var group_self = yield wechatApi.checkGroup(message.FromUserName) 
 
-			console.log('查询我在的分组， ' + JSON.stringify(group_self));
+			//console.log('查询我在的分组， ' + JSON.stringify(group_self));
 		}else if(content === '13'){//获取用户接口测试
 			//单个获取
 			var user = yield wechatApi.fetchUsers(message.FromUserName,'en')
@@ -276,7 +292,7 @@ exports.reply = function* (next){
 
 			var msgData = yield wechatApi.sendByGroup('mpnews', mpnews, 100)
 
-			console.log(msgData);
+			//console.log(msgData);
 
 			reply = '回复成功了吗'
 		}else if(content === '16'){//测试群发消息的预览接口
@@ -291,13 +307,13 @@ exports.reply = function* (next){
 
 			var msgData = yield wechatApi.previewMass('mpnews', mpnews, 'openid乡村基f')
 
-			console.log(msgData);
+			//console.log(msgData);
 
 			reply = '测试预览完成，是否成功了 。 '
 		}else if(content === '17'){//测试，群发消息是否成功的查检接口
 			var checkResult = yield wechatApi.checkMass('msgid')
 
-			console.log(checkResult);
+			//console.log(checkResult);
 
 			reply = JSON.stringify(checkResult)
 		}

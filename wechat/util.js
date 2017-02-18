@@ -50,7 +50,6 @@ function formatMessage(result){
 exports.formatMessage = formatMessage
 exports.tpl = function(content, message){
 	var info = {}
-
 	var type = 'text'
 	var fromUserName = message.FromUserName
 	var toUserName = message.ToUserName
