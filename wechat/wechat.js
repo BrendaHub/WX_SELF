@@ -7,7 +7,11 @@ var request = Promise.promisify(require('request'))
 var util = require('./util')
 //获取票据接口的配置项目
 var prefix = 'https://api.weixin.qq.com/cgi-bin/'
+var mpPrefix = 'https://mp.weixin.qq.com/cgi-bin'
+//语意智能接口玩玩
+var semanticUrl = 'https://api.weixin.qq.com/semantic/semproxy/search'
 var api = {
+	semantUrl:semanticUrl,
 	accessToken: prefix + 'token?grant_type=client_credential',
 	temporary:{
 		upload: prefix + 'media/upload',
@@ -50,6 +54,13 @@ var api = {
 		get: prefix +'menu/get',
 		del: prefix + 'menu/delete',
 		current: prefix + 'get_current_selfmenu_info'
+	},
+	qrcode:{
+		create: prefix + 'qrcode/create',
+		showqrcode: mpPrefix + 'showqrcode'
+	},
+	shortUrl:{
+		create: prefix + 'shorturl'
 	}
 }
 
@@ -912,7 +923,79 @@ Wechat.prototype.getCurrentMenu = function(){
 	})
 }
 
+//创建二维码
+Wechat.prototype.createQrcode = function(qr){
+	var that = this 
+	return new Promise(function(resolve, reject){
+		that.fetchAccessToken().then(function(data){
+			var url = api.qrcode.create + '?access_token=' + data.access_token
+			request({method:'POST',url:url,json:true,body:qr}).then(function(response){
+				var _data = response.body
+				if(_data){
+					resolve(_data)
+				}else{
+					throw new Error('create Qrcode fails ')
+				}
+			}).catch(function(err){
+				reject(err)
+			})
+		})
+	})
+}
 
+//显示二维码方法
+Wechat.prototype.showQrcode = function(ticket){
+	return api.qrcode.show + '?ticket=' + encodeURI(ticket)
+}
+
+//调用微信的长链接 转换成短连接的方法
+Wechat.prototype.createShortUrl = function(urlType, url){
+	urlType = urlType || 'long2short'
+
+	var that = this 
+	return new Promise(function(resolve, reject){
+		that.fetchAccessToken().then(function(data){
+			var url  = api.shortUrl.create + '?access_token=' + data.access_token 
+			var form = {
+				action:urlType,
+				long_url:url
+			}
+			request({method:'POST',url:url, json:true, body:form}).then(function(response){
+				var _data = response.body
+				if(_data ){
+					resolve(_data)
+				}else{
+					throw new Error('showQrcode long_url fails ')
+				}
+			}).catch(function(err){
+				reject(err) 
+			})
+		})
+	})
+}
+
+//添加智能语意识别接口实现
+Wechat.prototype.semantic = function(semanticData){
+	var that = this 
+
+	return new Promise(function(resolve, reject){
+		that.fetchAccessToken().then(function(data){
+			var url = api.semantUrl + '?access_token=' + data.access_token 
+			//给参数的对象里添加一个 appid 
+			semanticData.appid = data.appID
+			request({method:'POST',json:true,url:url,body:semanticData}).then(function(response){
+				var _data = response.body 
+				if(_data){
+					resolve(_data)
+				}else{
+					throw new Error('semantic send fail ')
+				}
+			}).catch(function(err){
+				reject(err) 
+			})
+		})
+	})
+}
 // ========================
 
 

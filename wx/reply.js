@@ -64,14 +64,14 @@ exports.reply = function* (next){
 		}else if(message.Event === 'pic_weixin'){
 			//console.log(message.SendPicsInfo.PicList);
 			//console.log(message.SendPicsInfo.Count);
-			this.body = '您点击了菜单中的： ' + message.EventKey
+			// this.body = '您点击了菜单中的： ' + message.EventKey
 		}else if(message.Event === 'location_select'){
 			//console.log(message.SendLocationInfo.Location_X);
 			//console.log(message.SendLocationInfo.Location_Y);
 			//console.log(message.SendLocationInfo.Scale);
 			//console.log(message.SendLocationInfo.Label);
 			//console.log(message.SendLocationInfo.Poiname);
-			this.body = '您点击了菜单中的： ' + message.EventKey
+			// this.body = '您点击了菜单中的： ' + message.EventKey
 		}
 		
 	}else if(message.MsgType === 'text'){
@@ -316,6 +316,57 @@ exports.reply = function* (next){
 			//console.log(checkResult);
 
 			reply = JSON.stringify(checkResult)
+		}else if(content === '18'){//创建二维码
+			//临时场景的模式
+			var tempQr = {
+				expire_seconds: 400000,
+				action_name:'QR_SCENE',
+				action_info:{
+					scene:{
+						scene_id:123
+					}
+				}
+			}
+			//永久式的场景一
+			var permLimitQr = {
+				action_name:'QR_LIMIT_SCENE',
+				action_info:{
+					scene:{
+						scene_id:123
+					}
+				}
+			}
+			//永久式的场景二
+			var permStrQr = {
+				action_name:'QR_LIMIT_STR_SCENE',
+				action_info:{
+					scene:{
+						scene_str:'abc'
+					}
+				}
+			}
+
+			var qr1 = yield wechatApi.createQrcode(tempQr)
+			var qr2 = yield wechatApi.createQrcode(permLimitQr)
+			var qr3 = yield wechatApi.createQrcode(permStrQr)
+
+			reply = qr1 + qr2 + qr3 
+		} else if(content === '19'){
+			var longurl = 'http://www.binggou.com'
+
+			var shortData = yield wechatApi.createShortUrl(null, longurl)
+
+			reply = shortData.short_url 
+		}else if(content === '20'){
+			var semanticData = {
+						query:'熊出没',
+						city:'北京',
+						category: 'movie,music',
+						uid: message.FromUserName
+					}
+			var _semanticData =  yield wechatApi.semantic(semanticData)
+			reply = JSON.stringify(_semanticData)
+			
 		}
 
 	
