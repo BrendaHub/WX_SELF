@@ -1,1 +1,1 @@
-{"errcode":40066,"errmsg":"invalid url hint: [Tq6m70958vr31!]","expires_in":null}
+{"errcode":0,"errmsg":"ok","ticket":"kgt8ON7yVITDhtdwci0qefWXAWfJthTDmm1OPhYhogLXUr2-OnTgdEgCTfx1UQisSBHUBmjxlm_J2Z8EY1x0Pg","expires_in":1487507730019}

@@ -180,11 +180,9 @@ Wechat.prototype.fetchTicket = function(access_token){
 //更新ticket 方法
 Wechat.prototype.updateTicket = function(access_token){
 	//access_token=ACCESS_TOKEN&type=jsapi
-	var url = api.ticket.get + '&access_token=' + access_token + '&type=jsapi'
-	console.log('utl = ' + JSON.stringify(url));
+	var url = api.ticket.get + '?access_token=' + access_token + '&type=jsapi'
 	return new Promise(function(resolve, reject){
 		request({url: url, json:true}).then(function(response){
-			console.log('ticket = ' + JSON.stringify(response));
 			// var data = response[1]
 			var data = response.body
 			var now = (new Date().getTime())

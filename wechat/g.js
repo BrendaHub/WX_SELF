@@ -10,7 +10,7 @@ module.exports = function(opts, handler){
 	return function* (next){
 		var that = this
 		//通过 this.query 就可以拿到 微信传过来的签名参数
-		console.log(this.query);
+		// console.log(this.query);
 		//自己配置的token
 		var token = opts.token 
 		//拿到传递过来的signatrue
@@ -28,7 +28,7 @@ module.exports = function(opts, handler){
 		if(this.method === 'GET'){
 			
 			//判断生成的签名与传递过来的签名的正确性
-			console.log('sha1 = ' + sha);
+			// console.log('sha1 = ' + sha);
 			if(sha === signature){
 				this.body = echostr + ''
 			}else{

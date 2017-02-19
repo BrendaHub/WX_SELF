@@ -45,6 +45,52 @@ var _tpl = heredoc(function(){/*
 				'translateVoice'
 		    ] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
 		});
+
+		wx.ready(function(){
+			//用来检查某个接口是否可以调用
+			wx.checkJsApi({
+				    jsApiList: ['onVoiceRecordEnd'], // 需要检测的JS接口列表，所有JS接口列表见附录2,
+				    success: function(res) {
+				    	console.log(res)
+				        // 以键值对的形式返回，可用的api值true，不可用为false
+				        // 如：{"checkResult":{"chooseImage":true},"errMsg":"checkJsApi:ok"}
+				    }
+				});
+			
+		    // config信息验证后会执行ready方法，所有接口调用都必须在config接口获得结果之后，config是一个客户端的异步操作，所以如果需要在页面加载时就调用相关接口，则须把相关接口放在ready函数中调用来确保正确执行。对于用户触发时才调用的接口，则可以直接调用，不需要放在ready函数中。
+			//定义一个停止录音的操作变量
+			var isRecording = false
+
+		    $('h1').on('tap', function(){
+		    	if(!isRecording){
+		    		isRecording = true //标记录音开始
+					wx.startRecord({
+						//如果取消操作了
+						cancel:function(){
+							window.alert('你取消了录音操作。')
+						}
+					})
+					return 
+		    	}
+				
+				isRecording = false 
+				wx.stopRecord({
+				    success: function (res) {
+				        var localId = res.localId
+				        //录音结束后，就可以开始识别音频了
+				        wx.translateVoice({
+						   localId: localId, // 需要识别的音频的本地Id，由录音相关接口获得
+						    isShowProgressTips: 1, // 默认为1，显示进度提示
+						    success: function (res) {
+						        alert(res.translateResult); // 语音识别的结果
+						    }
+						});
+				    }
+				})
+
+		    })
+		});
+
 	</script>
 </body>
 </html>
@@ -58,7 +104,7 @@ var createNonce = function(){
 //第二步， 生成一个时间截
 var createTimestamp = function(){
 	//表示是生成了一个十进制的时间截的数字
-	return parseInt(new Date().getTime()/1000, 10) + ' '
+	return parseInt(new Date().getTime()/1000, 10) + ''
 }
 
 //实现具体的签名算法，方法如下所示：
@@ -111,12 +157,12 @@ app.use(function *(next){
 		var ticketData = yield wechatApi.fetchTicket(access_token)
 		var ticket = ticketData.ticket 
 		var url = this.href //当前操作的完整url 
-		console.log('ticket = ' + ticket );
-		console.log('url = ' + url );
+		console.log('ticket=' + JSON.stringify(ticket));
+		console.log('url = ' + JSON.stringify(url));
 		var signData = sign(ticket, url)
 
-		console.log(signData);
-
+		console.log('signData = ' + JSON.stringify(signData));
+		//通过ejs整合heredoc的模板描述，进行数据值绑定
 		this.body = ejs.render(_tpl, signData) 
 
 		return next 
